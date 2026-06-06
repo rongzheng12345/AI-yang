@@ -1,0 +1,29 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "functions": {
+    "api/chat.js": {
+      "maxDuration": 30
+    }
+  },
+  "routes": [
+    {
+      "src": "/wp-(admin|login|content|includes)/(.*)",
+      "mitigate": {
+        "action": "deny"
+      }
+    },
+    {
+      "src": "/(.*)",
+      "has": [
+        {
+          "type": "header",
+          "key": "user-agent",
+          "value": "(?i)^(curl|wget|python-requests|scrapy|httpx)/"
+        }
+      ],
+      "mitigate": {
+        "action": "challenge"
+      }
+    }
+  ]
+}

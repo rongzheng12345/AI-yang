@@ -1,4 +1,5 @@
 import {
+  buildClinicalLoopWorkspace,
   buildCohortAnalysis,
   buildCohortSummary,
   buildDecisionSignals,
@@ -19,10 +20,12 @@ const state = {
   selectedCaseId: null,
   activeEntry: "assistant",
   activeMetricKey: null,
+  selectedEvidenceId: null,
   reviewed: new Set(),
   uploadQueue: [],
   familyUploads: new Map(),
   chatMessages: new Map(),
+  modelFeedback: new Map(),
   chatPending: false,
   cohortFilters: {
     disease: "all",
@@ -48,6 +51,7 @@ const el = {
   assistantView: document.querySelector("#assistantView"),
   similarView: document.querySelector("#similarView"),
   cohortView: document.querySelector("#cohortView"),
+  loopView: document.querySelector("#loopView"),
   visitDate: document.querySelector("#visitDate"),
   caseProfile: document.querySelector("#caseProfile"),
   aiDraft: document.querySelector("#aiDraft"),
@@ -86,6 +90,23 @@ const el = {
   cohortEffectiveness: document.querySelector("#cohortEffectiveness"),
   cohortMisdiagnosis: document.querySelector("#cohortMisdiagnosis"),
   researchTags: document.querySelector("#researchTags"),
+  intakeStatus: document.querySelector("#intakeStatus"),
+  intakeCenter: document.querySelector("#intakeCenter"),
+  reviewCenterStatus: document.querySelector("#reviewCenterStatus"),
+  doctorReviewCenter: document.querySelector("#doctorReviewCenter"),
+  evidenceTraceStatus: document.querySelector("#evidenceTraceStatus"),
+  evidenceTrace: document.querySelector("#evidenceTrace"),
+  followUpStatus: document.querySelector("#followUpStatus"),
+  followUpTasks: document.querySelector("#followUpTasks"),
+  riskAlertStatus: document.querySelector("#riskAlertStatus"),
+  riskAlerts: document.querySelector("#riskAlerts"),
+  pathwayTemplate: document.querySelector("#pathwayTemplate"),
+  knowledgeBase: document.querySelector("#knowledgeBase"),
+  mdtBoard: document.querySelector("#mdtBoard"),
+  exportCsvButton: document.querySelector("#exportCsvButton"),
+  researchExport: document.querySelector("#researchExport"),
+  modelFeedbackStatus: document.querySelector("#modelFeedbackStatus"),
+  modelFeedback: document.querySelector("#modelFeedback"),
 };
 
 async function init() {
@@ -152,6 +173,31 @@ function bindEvents() {
     event.preventDefault();
     await sendChatMessage();
   });
+
+  document.addEventListener("click", (event) => {
+    const evidenceButton = event.target.closest("[data-open-evidence]");
+    if (!evidenceButton) return;
+    openEvidenceTrace(evidenceButton.dataset.openEvidence);
+  });
+
+  el.loopView.addEventListener("click", (event) => {
+    const traceButton = event.target.closest("[data-trace-id]");
+    if (traceButton) {
+      state.selectedEvidenceId = traceButton.dataset.traceId;
+      renderClinicalLoop(getSelectedCase());
+      return;
+    }
+
+    if (event.target.closest("[data-export-csv]")) {
+      exportResearchCsv();
+      return;
+    }
+
+    const feedbackButton = event.target.closest("[data-feedback]");
+    if (feedbackButton) {
+      submitModelFeedback(feedbackButton.dataset.feedback);
+    }
+  });
 }
 
 function render() {
@@ -185,6 +231,7 @@ function render() {
   renderSimilarCases(clinicalCase);
   renderCohort();
   renderTags(clinicalCase);
+  renderClinicalLoop(clinicalCase);
 }
 
 function getSelectedCase() {
@@ -215,6 +262,7 @@ function renderCaseList() {
     button.addEventListener("click", () => {
       state.selectedCaseId = button.dataset.caseId;
       state.activeMetricKey = null;
+      state.selectedEvidenceId = null;
       render();
     });
   }
@@ -294,6 +342,7 @@ function renderEntryNav() {
     assistant: el.assistantView,
     similar: el.similarView,
     cohort: el.cohortView,
+    loop: el.loopView,
   };
 
   for (const [entry, view] of Object.entries(views)) {
@@ -538,6 +587,7 @@ function renderAbnormalMetrics(clinicalCase) {
     <div class="signal-row">
       <strong>${escapeHtml(metric.label)} ${escapeHtml(metric.value)} ${escapeHtml(metric.unit ?? "")}</strong>
       <p>${escapeHtml(metric.date)} · ${escapeHtml(metric.context ?? "样本记录")} · ${escapeHtml(metric.reference ?? "参考范围待确认")}</p>
+      <button class="inline-action" type="button" data-open-evidence="${escapeHtml(metricTraceId(metric))}">查看证据</button>
     </div>
   `).join("");
 }
@@ -569,7 +619,7 @@ function renderNextStepDraft(clinicalCase) {
   ].slice(0, 8);
 
   el.nextStepDraft.innerHTML = steps.length
-    ? `<ol>${steps.map((step) => `<li>${escapeHtml(step)}</li>`).join("")}</ol><div class="guardrail">${escapeHtml(clinicalCase.aiDraft?.guardrail ?? "必须医生确认后使用。")}</div>`
+    ? `<ol>${steps.map((step, index) => `<li>${escapeHtml(step)} <button class="inline-action" type="button" data-open-evidence="${escapeHtml(recommendationTraceId(index))}">证据</button></li>`).join("")}</ol><div class="guardrail">${escapeHtml(clinicalCase.aiDraft?.guardrail ?? "必须医生确认后使用。")}</div>`
     : `<p class="empty">暂无下一步建议草稿</p>`;
 }
 
@@ -709,6 +759,7 @@ function renderCohort() {
     button.addEventListener("click", () => {
       state.selectedCaseId = button.dataset.caseId;
       state.activeMetricKey = null;
+      state.selectedEvidenceId = null;
       render();
     });
   }
@@ -728,6 +779,285 @@ function renderTags(clinicalCase) {
   el.researchTags.innerHTML = clinicalCase.researchTags
     .map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`)
     .join("");
+}
+
+function renderClinicalLoop(clinicalCase) {
+  if (!clinicalCase) return;
+  const workspace = buildClinicalLoopWorkspace(clinicalCase, state.cases);
+  const traceIds = new Set(workspace.evidenceTrace.items.map((item) => item.id));
+  if (!state.selectedEvidenceId || !traceIds.has(state.selectedEvidenceId)) {
+    state.selectedEvidenceId = workspace.evidenceTrace.defaultItemId;
+  }
+
+  renderIntakeCenter(workspace);
+  renderDoctorReviewCenter(workspace, clinicalCase);
+  renderEvidenceTrace(workspace);
+  renderFollowUpTasks(workspace);
+  renderRiskAlerts(workspace);
+  renderPathwayTemplate(workspace);
+  renderKnowledgeBase(workspace);
+  renderMdtBoard(workspace);
+  renderResearchExport(workspace);
+  renderModelFeedback(workspace, clinicalCase);
+}
+
+function renderIntakeCenter(workspace) {
+  const intake = workspace.intakeCenter;
+  el.intakeStatus.textContent = `${intake.totalPages}页`;
+  const lowConfidence = intake.lowConfidencePages?.length ?? 0;
+
+  el.intakeCenter.innerHTML = `
+    <div class="loop-summary">
+      ${cohortStat("证据页", intake.totalPages)}
+      ${cohortStat("文档类型", intake.documents.length)}
+      ${cohortStat("低置信页", lowConfidence)}
+    </div>
+    <div class="loop-steps">
+      ${intake.stages.map((stage) => `
+        <div class="loop-step ${stage.status}">
+          <span>${escapeHtml(stage.value)}</span>
+          <strong>${escapeHtml(stage.name)}</strong>
+          <p>${escapeHtml(stage.detail)}</p>
+        </div>
+      `).join("")}
+    </div>
+    <div class="document-grid">
+      ${intake.documents.map((document) => `
+        <div class="document-item">
+          <strong>${escapeHtml(document.label)} · ${document.count}页</strong>
+          <p>${escapeHtml(document.sources.join(" / ") || "来源待确认")}</p>
+          <span>${escapeHtml(document.status)} · 置信度 ${document.confidence ?? "待识别"}</span>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderDoctorReviewCenter(workspace, clinicalCase) {
+  const center = workspace.doctorReviewCenter;
+  el.reviewCenterStatus.textContent = `${center.total}项`;
+
+  el.doctorReviewCenter.innerHTML = center.items.map((item) => {
+    const checked = state.reviewed.has(`${clinicalCase.id}:${item.id}`);
+    return `
+      <label class="review-item loop-review">
+        <input type="checkbox" data-loop-review-id="${escapeHtml(item.id)}" ${checked ? "checked" : ""} />
+        <span>
+          <strong>${escapeHtml(item.title)}</strong>
+          <p>
+            <span class="severity ${escapeHtml(item.severity)}">${severityLabel(item.severity)}</span>
+            ${escapeHtml(item.type)} · ${escapeHtml(item.owner)} · ${escapeHtml(item.action)}
+          </p>
+          <button class="inline-action" type="button" data-open-evidence="${escapeHtml(item.evidenceId)}">查看证据</button>
+        </span>
+      </label>
+    `;
+  }).join("");
+
+  for (const checkbox of el.doctorReviewCenter.querySelectorAll("input")) {
+    checkbox.addEventListener("change", () => {
+      const key = `${clinicalCase.id}:${checkbox.dataset.loopReviewId}`;
+      if (checkbox.checked) state.reviewed.add(key);
+      else state.reviewed.delete(key);
+    });
+  }
+}
+
+function renderEvidenceTrace(workspace) {
+  const traces = workspace.evidenceTrace.items;
+  const selected = traces.find((item) => item.id === state.selectedEvidenceId) ?? traces[0];
+  el.evidenceTraceStatus.textContent = selected?.pages?.length ? `P${selected.pages.join(" / P")}` : `${traces.length}条`;
+
+  if (!selected) {
+    el.evidenceTrace.innerHTML = `<p class="empty">暂无证据映射</p>`;
+    return;
+  }
+
+  el.evidenceTrace.innerHTML = `
+    <div class="trace-tabs">
+      ${traces.slice(0, 12).map((trace) => `
+        <button class="trace-button ${trace.id === selected.id ? "is-active" : ""}" type="button" data-trace-id="${escapeHtml(trace.id)}">
+          <strong>${escapeHtml(trace.typeLabel ?? traceTypeLabel(trace.type))}</strong>
+          <span>${escapeHtml(trace.title)}</span>
+        </button>
+      `).join("")}
+    </div>
+    <div class="trace-detail">
+      <div>
+        <span class="trace-status">${escapeHtml(selected.status)}</span>
+        <h4>${escapeHtml(selected.title)}</h4>
+        <p>${escapeHtml(selected.detail)}</p>
+      </div>
+      <div class="page-range">
+        ${(selected.pages ?? []).map((page) => `<span class="page-pill">P${page}</span>`).join("") || `<span class="page-pill">待确认</span>`}
+      </div>
+      <small>${escapeHtml(selected.source ?? "来源待确认")}</small>
+    </div>
+  `;
+}
+
+function renderFollowUpTasks(workspace) {
+  const tasks = workspace.followUpTasks;
+  el.followUpStatus.textContent = `${tasks.length}项`;
+  el.followUpTasks.innerHTML = tasks.map((task) => `
+    <div class="task-item">
+      <div>
+        <strong>${escapeHtml(task.title)}</strong>
+        <p>${escapeHtml(task.owner)} · ${escapeHtml(task.status)}</p>
+      </div>
+      <span>${escapeHtml(task.due)}</span>
+      <button class="inline-action" type="button" data-open-evidence="${escapeHtml(task.evidenceId)}">证据</button>
+    </div>
+  `).join("");
+}
+
+function renderRiskAlerts(workspace) {
+  const alerts = workspace.riskAlerts;
+  const highCount = alerts.filter((alert) => alert.level === "高").length;
+  el.riskAlertStatus.textContent = highCount ? `高风险 ${highCount}` : `${alerts.length}项`;
+  el.riskAlerts.innerHTML = alerts.map((alert) => `
+    <div class="alert-item level-${escapeHtml(alert.level)}">
+      <span>${escapeHtml(alert.level)}</span>
+      <div>
+        <strong>${escapeHtml(alert.title)}</strong>
+        <p>${escapeHtml(alert.trigger)}</p>
+        <small>${escapeHtml(alert.action)}</small>
+      </div>
+      <button class="inline-action" type="button" data-open-evidence="${escapeHtml(alert.evidenceId)}">证据</button>
+    </div>
+  `).join("");
+}
+
+function renderPathwayTemplate(workspace) {
+  const template = workspace.pathwayTemplate;
+  el.pathwayTemplate.innerHTML = `
+    <div class="pathway-head">
+      <strong>${escapeHtml(template.name)}</strong>
+      <p>${escapeHtml(template.diseaseScope)}</p>
+    </div>
+    ${compactList("必采字段", template.requiredFields)}
+    ${compactList("关键指标", template.keyMetrics)}
+    ${compactList("并发症风险", template.complications)}
+    ${compactList("随访频率", template.followUpCadence)}
+    ${compactList("营养管理", template.nutritionNotes)}
+  `;
+}
+
+function renderKnowledgeBase(workspace) {
+  el.knowledgeBase.innerHTML = workspace.knowledgeBase.map((item) => `
+    <div class="knowledge-item">
+      <span>${escapeHtml(item.type)}</span>
+      <strong>${escapeHtml(item.title)}</strong>
+      <p>${escapeHtml(item.use)}</p>
+      <small>${escapeHtml(item.boundary)}</small>
+    </div>
+  `).join("");
+}
+
+function renderMdtBoard(workspace) {
+  const board = workspace.mdtBoard;
+  el.mdtBoard.innerHTML = `
+    <div class="tag-list">
+      ${board.suggestedDepartments.map((department) => `<span class="tag">${escapeHtml(department)}</span>`).join("")}
+    </div>
+    <ol class="mdt-agenda">
+      ${board.agenda.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+    </ol>
+    <div class="decision-log">
+      ${board.decisionLog.map((item) => `
+        <div>
+          <strong>${escapeHtml(item.role)}</strong>
+          <p>${escapeHtml(item.text)}</p>
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function renderResearchExport(workspace) {
+  const exportData = workspace.researchExport;
+  el.researchExport.innerHTML = `
+    <div class="loop-summary">
+      ${cohortStat("字段", exportData.columns.length)}
+      ${cohortStat("记录", exportData.rows.length)}
+      ${cohortStat("高风险字段", exportData.columns.includes("high_risk_count") ? 1 : 0)}
+    </div>
+    <div class="export-table" role="table" aria-label="科研导出预览">
+      <div class="export-row is-head">${exportData.columns.slice(0, 5).map((column) => `<span>${escapeHtml(column)}</span>`).join("")}</div>
+      ${exportData.rows.slice(0, 4).map((row) => `
+        <div class="export-row">${row.slice(0, 5).map((cell) => `<span>${escapeHtml(cell)}</span>`).join("")}</div>
+      `).join("")}
+    </div>
+    <p class="guardrail">${escapeHtml(exportData.note)}</p>
+  `;
+}
+
+function renderModelFeedback(workspace, clinicalCase) {
+  const records = getModelFeedbackRecords(clinicalCase.id);
+  el.modelFeedbackStatus.textContent = records.length ? `${records.length}条反馈` : workspace.modelQuality.latestStatus;
+  el.modelFeedback.innerHTML = `
+    <div class="feedback-options">
+      ${workspace.modelQuality.feedbackOptions.map((option) => `
+        <button type="button" data-feedback="${escapeHtml(option)}">${escapeHtml(option)}</button>
+      `).join("")}
+    </div>
+    ${compactList("质控核对", workspace.modelQuality.reviewChecklist)}
+    <div class="feedback-records">
+      ${records.length ? records.map((record) => `
+        <div>
+          <strong>${escapeHtml(record.value)}</strong>
+          <span>${escapeHtml(record.time)}</span>
+        </div>
+      `).join("") : `<p class="empty">暂无医生反馈</p>`}
+    </div>
+  `;
+}
+
+function openEvidenceTrace(traceId) {
+  const clinicalCase = getSelectedCase();
+  if (!clinicalCase || !traceId) return;
+  state.selectedEvidenceId = traceId;
+  state.activeEntry = "loop";
+  renderEntryNav();
+  renderClinicalLoop(clinicalCase);
+  const section = el.evidenceTrace.closest(".clinical-section");
+  section.scrollIntoView({ behavior: "smooth", block: "start" });
+  section.classList.remove("is-focused");
+  window.requestAnimationFrame(() => section.classList.add("is-focused"));
+  window.setTimeout(() => section.classList.remove("is-focused"), 1800);
+}
+
+function exportResearchCsv() {
+  const clinicalCase = getSelectedCase();
+  if (!clinicalCase) return;
+  const workspace = buildClinicalLoopWorkspace(clinicalCase, state.cases);
+  const blob = new Blob([workspace.researchExport.csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `${clinicalCase.code}-research-export.csv`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function submitModelFeedback(value) {
+  const clinicalCase = getSelectedCase();
+  if (!clinicalCase || !value) return;
+  const records = getModelFeedbackRecords(clinicalCase.id);
+  records.unshift({
+    value,
+    time: new Date().toLocaleString("zh-CN", { hour12: false }),
+  });
+  renderClinicalLoop(clinicalCase);
+}
+
+function getModelFeedbackRecords(caseId) {
+  if (!state.modelFeedback.has(caseId)) {
+    state.modelFeedback.set(caseId, []);
+  }
+  return state.modelFeedback.get(caseId);
 }
 
 function stat(label, value, drillTarget) {
@@ -782,6 +1112,34 @@ function familyWorkflowBlock(workflow = []) {
       </ol>
     </div>
   `;
+}
+
+function compactList(title, items = []) {
+  if (!items.length) return "";
+  return `
+    <div class="compact-list">
+      <h4>${escapeHtml(title)}</h4>
+      <div>
+        ${items.map((item) => `<span>${escapeHtml(item)}</span>`).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function traceTypeLabel(type) {
+  return {
+    summary: "摘要",
+    metric: "指标",
+    recommendation: "建议",
+  }[type] ?? type;
+}
+
+function metricTraceId(metric) {
+  return `metric:${metric.key}:${metric.date}:${metric.value}`;
+}
+
+function recommendationTraceId(index) {
+  return `recommendation:${index}`;
 }
 
 function cohortSelect(name, label, options) {

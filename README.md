@@ -2,6 +2,8 @@
 
 面向 PKU / MMA 样本病例的临床数据结构化与医生端问答原型。
 
+完整项目说明见 [docs/project-description.md](docs/project-description.md)。
+
 ## 功能
 
 - 病例队列、病例摘要、指标趋势、病程时间轴

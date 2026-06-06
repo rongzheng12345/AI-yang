@@ -2,9 +2,11 @@ import assert from "node:assert/strict";
 import test from "node:test";
 
 import {
+  buildClinicalLoopWorkspace,
   buildCohortAnalysis,
   buildCohortSummary,
   buildDecisionSignals,
+  buildEvidenceTraceMap,
   buildExpertReplaySummary,
   buildFamilyCarePlan,
   buildIntakePipelineSummary,
@@ -297,4 +299,51 @@ test("buildCohortAnalysis summarizes effectiveness and misdiagnosis path views",
   assert.match(analysis.misdiagnosisPath[0].title, /误诊路径/);
   assert.match(analysis.misdiagnosisPath[0].detail, /发育迟缓/);
   assert.equal(analysis.cohortStats.totalCases, 1);
+});
+
+test("buildEvidenceTraceMap creates clickable traces for summary metrics and recommendations", () => {
+  const traces = buildEvidenceTraceMap(sampleCase);
+
+  assert.ok(traces.some((trace) => trace.type === "summary" && /诊断/.test(trace.title)));
+  assert.ok(traces.some((trace) => trace.type === "metric" && /Hcy/.test(trace.title) && trace.pages.length));
+  assert.ok(traces.some((trace) => trace.type === "recommendation" && /复核代谢指标/.test(trace.title)));
+  assert.ok(traces.every((trace) => trace.status === "待医生确认" || trace.status === "已结构化"));
+});
+
+test("buildClinicalLoopWorkspace assembles the ten doctor workflow modules", () => {
+  const workspace = buildClinicalLoopWorkspace(sampleCase, [sampleCase]);
+
+  assert.deepEqual(Object.keys(workspace), [
+    "intakeCenter",
+    "doctorReviewCenter",
+    "evidenceTrace",
+    "followUpTasks",
+    "riskAlerts",
+    "pathwayTemplate",
+    "knowledgeBase",
+    "mdtBoard",
+    "researchExport",
+    "modelQuality",
+  ]);
+  assert.ok(workspace.intakeCenter.documents.length >= 4);
+  assert.ok(workspace.doctorReviewCenter.items.some((item) => /Hcy/.test(item.title)));
+  assert.ok(workspace.evidenceTrace.items.some((item) => item.pages.length));
+  assert.ok(workspace.followUpTasks.some((task) => task.status === "待安排"));
+  assert.ok(workspace.riskAlerts.some((alert) => alert.level === "高"));
+  assert.match(workspace.pathwayTemplate.name, /MMA|有机酸/);
+  assert.ok(workspace.pathwayTemplate.requiredFields.includes("基因型"));
+  assert.ok(workspace.knowledgeBase.some((item) => item.type === "指南/共识"));
+  assert.ok(workspace.mdtBoard.suggestedDepartments.includes("心内科"));
+  assert.ok(workspace.researchExport.columns.includes("case_id"));
+  assert.ok(workspace.researchExport.rows[0].includes("case-demo"));
+  assert.ok(workspace.modelQuality.feedbackOptions.includes("有遗漏"));
+});
+
+test("buildLocalAnswer covers clinical loop workflow questions", () => {
+  const answer = buildLocalAnswer(sampleCase, "这个病例的随访任务、风险预警、专病模板和指南怎么安排？");
+
+  assert.match(answer.text, /随访任务/);
+  assert.match(answer.text, /风险预警/);
+  assert.match(answer.text, /专病路径模板/);
+  assert.match(answer.text, /指南/);
 });

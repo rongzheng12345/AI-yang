@@ -30,3 +30,28 @@ test("case overview stats drill into their supporting detail sections", () => {
   assert.match(html, /id="reviewRules"/);
   assert.match(html, /id="timeline"/);
 });
+
+test("frontend exposes a clinical closed-loop workflow entry", () => {
+  assert.match(html, /data-entry="loop"/);
+  assert.match(html, /临床闭环/);
+  assert.match(html, /id="loopView"/);
+  assert.match(html, /id="intakeCenter"/);
+  assert.match(html, /id="doctorReviewCenter"/);
+  assert.match(html, /id="evidenceTrace"/);
+  assert.match(html, /id="followUpTasks"/);
+  assert.match(html, /id="riskAlerts"/);
+  assert.match(html, /id="pathwayTemplate"/);
+  assert.match(html, /id="knowledgeBase"/);
+  assert.match(html, /id="mdtBoard"/);
+  assert.match(html, /id="researchExport"/);
+  assert.match(html, /id="modelFeedback"/);
+});
+
+test("frontend renders closed-loop modules and interactions", () => {
+  assert.match(app, /buildClinicalLoopWorkspace/);
+  assert.match(app, /renderClinicalLoop\(clinicalCase\)/);
+  assert.match(app, /function renderIntakeCenter/);
+  assert.match(app, /function renderEvidenceTrace/);
+  assert.match(app, /function exportResearchCsv/);
+  assert.match(app, /function submitModelFeedback/);
+});

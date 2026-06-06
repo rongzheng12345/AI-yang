@@ -16,6 +16,88 @@ const SEVERITY_RANK = {
   low: 2,
 };
 
+const PATHWAY_TEMPLATES = {
+  mma: {
+    name: "MMA/有机酸血症专病路径模板",
+    diseaseScope: "甲基丙二酸尿症合并型、同型半胱氨酸血症、钴胺素代谢异常",
+    requiredFields: ["基因型", "首发年龄", "发育行为", "癫痫史", "心电图", "饮食/用药依从性"],
+    keyMetrics: ["Hcy", "C3", "C3/C2", "尿甲基丙二酸", "血氨", "肝肾功能"],
+    complications: ["代谢危象", "癫痫", "QT间期延长", "发育迟缓", "骨骼/内分泌问题"],
+    followUpCadence: ["急性状态随时复核血氨、酸碱、电解质和血糖", "稳定期按医生确认周期追踪 Hcy、酰基肉碱谱和尿有机酸", "心电、发育行为和骨健康纳入长期随访"],
+    nutritionNotes: ["记录蛋白、能量摄入和特殊营养品", "感染或拒食时需要及时进入风险评估", "所有饮食调整由医生和营养师确认"],
+  },
+  pku: {
+    name: "PKU/高苯丙氨酸血症专病路径模板",
+    diseaseScope: "苯丙酮尿症、高苯丙氨酸血症、长期低蛋白饮食随访",
+    requiredFields: ["基因型", "Phe/Tyr趋势", "饮食记录", "特殊配方依从性", "神经行为", "骨健康"],
+    keyMetrics: ["Phe", "Tyr", "营养指标", "骨代谢", "维生素D", "体重/BMI"],
+    complications: ["Phe控制不佳", "神经行为问题", "癫痫", "骨密度不足", "营养缺口"],
+    followUpCadence: ["按医生确认周期复查 Phe/Tyr", "复诊带完整饮食和配方记录", "骨代谢、神经系统和营养评估长期追踪"],
+    nutritionNotes: ["复核天然蛋白、低蛋白主食和特殊配方", "避免自行加减高蛋白食物", "保证足够能量摄入和营养补充"],
+  },
+};
+
+const DEFAULT_PATHWAY_TEMPLATE = {
+  name: "罕见遗传代谢病通用路径模板",
+  diseaseScope: "疑似或确诊遗传代谢病长期随访",
+  requiredFields: ["诊断", "基因型", "首发症状", "关键指标", "治疗方案", "随访计划"],
+  keyMetrics: ["血氨", "肝肾功能", "血糖", "电解质", "代谢筛查"],
+  complications: ["急性代谢失衡", "神经系统风险", "营养问题", "发育问题"],
+  followUpCadence: ["按专病和医生确认周期复诊", "急性状态及时复核关键代谢指标"],
+  nutritionNotes: ["记录饮食、用药和异常事件", "所有调整由医生确认"],
+};
+
+const KNOWLEDGE_LIBRARY = {
+  mma: [
+    {
+      type: "指南/共识",
+      title: "MMA 与同型半胱氨酸血症诊疗共识要点",
+      use: "用于核对 Hcy、血氨、酰基肉碱谱、尿有机酸、心电和发育随访是否完整。",
+      boundary: "指南建议需结合患者基因型、治疗反应和医生判断。",
+    },
+    {
+      type: "药品/营养",
+      title: "羟钴胺、甜菜碱、左卡尼汀和维生素治疗核对表",
+      use: "用于复核治疗依从性、漏用记录和复查指标变化。",
+      boundary: "系统只做核对提醒，不生成处方。",
+    },
+    {
+      type: "急症流程",
+      title: "感染、呕吐、嗜睡后的代谢危象风险处置清单",
+      use: "用于提醒血氨、酸碱、电解质、血糖和急诊评估。",
+      boundary: "出现急性危险信号时应由医生或急诊团队处理。",
+    },
+  ],
+  pku: [
+    {
+      type: "指南/共识",
+      title: "PKU 长期随访与 Phe/Tyr 控制要点",
+      use: "用于核对 Phe/Tyr 趋势、饮食记录、特殊配方和神经行为随访。",
+      boundary: "目标范围和治疗调整需医生个体化确认。",
+    },
+    {
+      type: "营养管理",
+      title: "低苯丙氨酸饮食、低蛋白主食和特殊配方核对表",
+      use: "用于追踪天然蛋白摄入、配方依从性和营养缺口。",
+      boundary: "不直接面向患者输出未经确认的饮食改变。",
+    },
+    {
+      type: "长期并发症",
+      title: "神经行为、癫痫和骨健康随访清单",
+      use: "用于提醒脑电、神经心理、骨代谢和维生素D/钙磷评估。",
+      boundary: "需要医生结合病程和检查结果判断。",
+    },
+  ],
+  default: [
+    {
+      type: "指南/共识",
+      title: "遗传代谢病通用诊疗路径核对表",
+      use: "用于核对基因、代谢、营养、神经和急性风险信息。",
+      boundary: "仅用于医生端资料整理。",
+    },
+  ],
+};
+
 export function classifyPages(pages = []) {
   const groups = new Map();
 
@@ -308,6 +390,106 @@ export function buildCohortAnalysis(cases = []) {
   };
 }
 
+export function buildEvidenceTraceMap(clinicalCase) {
+  const traces = [];
+  const clinicPages = pagesForKinds(clinicalCase, ["clinic_note"]);
+  const prescriptionPages = pagesForKinds(clinicalCase, ["prescription", "clinic_note"]);
+
+  traces.push({
+    id: `summary:${clinicalCase.id}`,
+    type: "summary",
+    title: `诊断与病例摘要：${(clinicalCase.diagnosis ?? []).slice(0, 2).join("、")}`,
+    detail: clinicalCase.summary ?? "暂无病例摘要。",
+    pages: clinicPages.pages,
+    source: clinicPages.sources.join(" / ") || "门诊病历",
+    status: "已结构化",
+  });
+
+  for (const metric of (clinicalCase.metrics ?? []).filter((item) => item.flag && item.flag !== "normal")) {
+    const evidence = metricEvidencePages(clinicalCase, metric);
+    traces.push({
+      id: metricTraceId(metric),
+      type: "metric",
+      title: `${metric.label} ${metric.value} ${metric.unit ?? ""}`.trim(),
+      detail: `${metric.date} · ${metric.context ?? "样本记录"} · ${metric.reference ?? "参考范围待确认"}`,
+      pages: evidence.pages,
+      source: evidence.sources.join(" / ") || metric.context || "检验报告",
+      status: "待医生确认",
+    });
+  }
+
+  const replay = buildExpertReplaySummary(clinicalCase);
+  const recommendations = [
+    ...(clinicalCase.aiDraft?.nextSteps ?? []),
+    ...(replay.dispositionDraft ?? []),
+    ...(replay.followUpPlan ?? []),
+  ];
+
+  recommendations.forEach((item, index) => {
+    traces.push({
+      id: recommendationTraceId(index),
+      type: "recommendation",
+      title: item,
+      detail: "建议草稿来自病例摘要、异常指标、专家复盘和处置意见整合。",
+      pages: prescriptionPages.pages.length ? prescriptionPages.pages : clinicPages.pages,
+      source: prescriptionPages.sources.join(" / ") || clinicPages.sources.join(" / ") || "门诊处置意见",
+      status: "待医生确认",
+    });
+  });
+
+  return traces;
+}
+
+export function buildClinicalLoopWorkspace(clinicalCase, cohortCases = []) {
+  const intake = buildIntakePipelineSummary(clinicalCase);
+  const replay = buildExpertReplaySummary(clinicalCase);
+  const familyCare = buildFamilyCarePlan(clinicalCase);
+  const evidenceItems = buildEvidenceTraceMap(clinicalCase);
+  const reviewItems = buildDoctorReviewItems(clinicalCase, replay, familyCare);
+  const followUpTasks = buildFollowUpTasks(clinicalCase, replay, familyCare);
+  const riskAlerts = buildRiskAlerts(clinicalCase, replay);
+  const pathwayTemplate = getPathwayTemplate(clinicalCase);
+  const researchExport = buildResearchExport(clinicalCase, cohortCases);
+
+  return {
+    intakeCenter: {
+      totalPages: intake.totalPages,
+      documents: intake.documentTypes.map((group) => ({
+        ...group,
+        status: group.sources.length ? "已分类" : "待确认",
+        confidence: averageConfidenceForKind(clinicalCase.pages ?? [], group.kind),
+      })),
+      lowConfidencePages: intake.lowConfidencePages,
+      stages: intake.stages,
+    },
+    doctorReviewCenter: {
+      total: reviewItems.length,
+      highPriority: reviewItems.filter((item) => item.severity === "high").length,
+      items: reviewItems,
+    },
+    evidenceTrace: {
+      items: evidenceItems,
+      defaultItemId: evidenceItems[0]?.id ?? null,
+    },
+    followUpTasks,
+    riskAlerts,
+    pathwayTemplate,
+    knowledgeBase: getKnowledgeBase(clinicalCase),
+    mdtBoard: buildMdtBoard(clinicalCase, replay, riskAlerts),
+    researchExport,
+    modelQuality: {
+      feedbackOptions: ["正确", "有遗漏", "错误", "需改写"],
+      reviewChecklist: [
+        "是否引用了正确证据页",
+        "是否遗漏关键异常指标",
+        "是否把草稿边界写清楚",
+        "是否需要补充医生确认意见",
+      ],
+      latestStatus: "等待医生反馈",
+    },
+  };
+}
+
 export function buildQuestionContext(clinicalCase) {
   const diagnosis = (clinicalCase.diagnosis ?? []).join("；");
   const latestMetrics = getAvailableMetrics(clinicalCase)
@@ -407,6 +589,24 @@ export function buildLocalAnswer(clinicalCase, question) {
     };
   }
 
+  if (/闭环|随访任务|随访|风险预警|预警中心|专病|路径|模板|指南|文献|知识库|mdt|讨论|导出|质控|反馈/.test(normalizedQuestion)) {
+    const loop = buildClinicalLoopWorkspace(clinicalCase, [clinicalCase]);
+    const taskText = loop.followUpTasks.slice(0, 3).map((task) => task.title).join("、") || "暂无随访任务";
+    const alertText = loop.riskAlerts.slice(0, 3).map((alert) => `${alert.level}风险：${alert.title}`).join("；") || "暂无风险预警";
+    const guideText = loop.knowledgeBase.slice(0, 2).map((item) => `${item.type}-${item.title}`).join("；");
+    return {
+      mode: "local",
+      text: [
+        `临床闭环已生成：入库中心${loop.intakeCenter.documents.length}类文档，医生审核中心${loop.doctorReviewCenter.total}项待处理。`,
+        `随访任务：${taskText}。`,
+        `风险预警：${alertText}。`,
+        `专病路径模板：${loop.pathwayTemplate.name}，关键字段包括${loop.pathwayTemplate.requiredFields.slice(0, 4).join("、")}。`,
+        `指南/知识库：${guideText}。MDT建议科室：${loop.mdtBoard.suggestedDepartments.join("、") || "按医生判断"}。`,
+        "所有导出、质控和家属端内容均需医生确认及数据治理流程把关。",
+      ].join("\n"),
+    };
+  }
+
   if (/相似|类似|以前|既往|怎么处理|处理方式/.test(normalizedQuestion)) {
     return {
       mode: "local",
@@ -458,6 +658,280 @@ export function buildLocalAnswer(clinicalCase, question) {
     mode: "local",
     text: `我已基于当前病例整理出上下文。该病例诊断为 ${(clinicalCase.diagnosis ?? []).join("、")}。你可以继续问“最新 Hcy/Phe/C3 是多少”“有哪些风险”“治疗和营养方案是什么”。所有回答都需要医生审核。`,
   };
+}
+
+function buildDoctorReviewItems(clinicalCase, replay, familyCare) {
+  const items = [];
+
+  for (const signal of buildDecisionSignals(clinicalCase)) {
+    items.push({
+      id: `risk:${signal.id}`,
+      type: "风险预警",
+      title: signal.label,
+      severity: signal.severity,
+      owner: "医生",
+      action: "确认风险等级和下一步处置",
+      evidenceId: bestEvidenceIdForText(clinicalCase, signal.label),
+    });
+  }
+
+  for (const check of replay.missingChecks ?? []) {
+    items.push({
+      id: `check:${check.name}`,
+      type: "缺失检查",
+      title: check.name,
+      severity: check.status === "missing" ? "medium" : "low",
+      owner: "医生/助理",
+      action: check.reason,
+      evidenceId: `summary:${clinicalCase.id}`,
+    });
+  }
+
+  (clinicalCase.aiDraft?.nextSteps ?? []).slice(0, 3).forEach((step, index) => {
+    items.push({
+      id: `draft:${index}`,
+      type: "建议草稿",
+      title: step,
+      severity: "low",
+      owner: "医生",
+      action: "确认、修改或驳回后进入病历",
+      evidenceId: recommendationTraceId(index),
+    });
+  });
+
+  if (familyCare.requiresDoctorApproval) {
+    items.push({
+      id: "family-care-approval",
+      type: "家属管理",
+      title: "家属版说明和危险信号需医生确认后发送",
+      severity: "medium",
+      owner: "医生",
+      action: "确认通俗说明、饮食清单、用药和复查提醒",
+      evidenceId: `summary:${clinicalCase.id}`,
+    });
+  }
+
+  return items.sort((a, b) => (SEVERITY_RANK[a.severity] ?? 99) - (SEVERITY_RANK[b.severity] ?? 99));
+}
+
+function buildFollowUpTasks(clinicalCase, replay, familyCare) {
+  const tasks = [];
+
+  (replay.followUpPlan ?? []).forEach((item, index) => {
+    tasks.push({
+      id: `expert-follow-${index}`,
+      title: item,
+      owner: "医生",
+      status: "待安排",
+      due: inferDueLabel(item),
+      evidenceId: recommendationTraceId((clinicalCase.aiDraft?.nextSteps?.length ?? 0) + (replay.dispositionDraft?.length ?? 0) + index),
+    });
+  });
+
+  (familyCare.followUpReminders ?? []).slice(0, 4).forEach((item, index) => {
+    tasks.push({
+      id: `family-follow-${index}`,
+      title: item,
+      owner: "家属执行/医生确认",
+      status: "待上传",
+      due: inferDueLabel(item),
+      evidenceId: `summary:${clinicalCase.id}`,
+    });
+  });
+
+  (replay.requiredChecks ?? [])
+    .filter((check) => check.status === "missing" || check.status === "review")
+    .forEach((check, index) => {
+      tasks.push({
+        id: `required-check-${index}`,
+        title: `补充/复核：${check.name}`,
+        owner: "医生/助理",
+        status: check.status === "missing" ? "待安排" : "待复核",
+        due: "近期",
+        evidenceId: `summary:${clinicalCase.id}`,
+      });
+    });
+
+  return dedupeByTitle(tasks).slice(0, 12);
+}
+
+function buildRiskAlerts(clinicalCase, replay) {
+  const alerts = [];
+
+  for (const signal of buildDecisionSignals(clinicalCase)) {
+    alerts.push({
+      id: `signal:${signal.id}`,
+      level: signal.severity === "high" ? "高" : signal.severity === "medium" ? "中" : "低",
+      title: signal.label,
+      trigger: "结构化审核规则开放",
+      action: "医生确认风险等级和处置意见",
+      evidenceId: bestEvidenceIdForText(clinicalCase, signal.label),
+    });
+  }
+
+  for (const item of replay.riskTriggers ?? []) {
+    alerts.push({
+      id: `trigger:${item.risk}`,
+      level: /危象|癫痫|QT|意识|呕吐|嗜睡/.test(`${item.risk}${item.trigger}`) ? "高" : "中",
+      title: item.risk,
+      trigger: item.trigger,
+      action: item.response,
+      evidenceId: `summary:${clinicalCase.id}`,
+    });
+  }
+
+  return dedupeByTitle(alerts).slice(0, 10);
+}
+
+function buildMdtBoard(clinicalCase, replay, riskAlerts) {
+  const text = [
+    clinicalCase.summary,
+    clinicalCase.diseaseFamily,
+    clinicalCase.genotype,
+    ...(clinicalCase.diagnosis ?? []),
+    ...(riskAlerts ?? []).map((item) => item.title),
+  ].join(" ");
+  const departments = ["遗传代谢/儿内科"];
+
+  if (/QT|心电|心律|胸闷|晕厥/.test(text)) departments.push("心内科");
+  if (/癫痫|抽搐|脑电|发育|行为|语言|运动/.test(text)) departments.push("神经科/康复科");
+  if (/骨龄|骨密度|内分泌|维生素D|钙|磷/.test(text)) departments.push("内分泌/骨健康");
+  if (/饮食|营养|配方|蛋白|Phe|Hcy|C3/.test(text)) departments.push("临床营养");
+
+  return {
+    suggestedDepartments: [...new Set(departments)],
+    agenda: [
+      `确认诊断与基因型：${(clinicalCase.diagnosis ?? []).slice(0, 2).join("、")}；${clinicalCase.genotype ?? "基因型待补充"}`,
+      `复盘关键风险：${riskAlerts.slice(0, 3).map((item) => item.title).join("、") || "暂无开放风险"}`,
+      `讨论处置草稿：${(replay.dispositionDraft ?? []).slice(0, 2).join("；")}`,
+      "形成医生确认后的随访和家属管理计划",
+    ],
+    decisionLog: [
+      { role: "系统", text: "已生成 MDT 讨论议题草稿，等待医生发起。" },
+      { role: "医生", text: "确认后可记录专家意见、处置版本和复盘结论。" },
+    ],
+  };
+}
+
+function buildResearchExport(clinicalCase, cohortCases = []) {
+  const cases = cohortCases.length ? cohortCases : [clinicalCase];
+  const columns = [
+    "case_id",
+    "code",
+    "disease_family",
+    "diagnosis",
+    "genotype",
+    "age",
+    "abnormal_metrics",
+    "treatments",
+    "high_risk_count",
+  ];
+  const rows = cases.map((item) => [
+    item.id,
+    item.code,
+    item.diseaseFamily ?? "",
+    (item.diagnosis ?? []).join(";"),
+    item.genotype ?? "",
+    item.age ?? "",
+    (item.metrics ?? []).filter((metric) => metric.flag && metric.flag !== "normal").map((metric) => metric.label).join(";"),
+    (item.treatments ?? []).map((treatment) => treatment.name).join(";"),
+    String(buildDecisionSignals(item).filter((signal) => signal.severity === "high").length),
+  ]);
+
+  return {
+    columns,
+    rows,
+    csv: [columns, ...rows].map((row) => row.map(csvCell).join(",")).join("\n"),
+    note: "导出前需确认伦理、脱敏、权限和研究方案。",
+  };
+}
+
+function getPathwayTemplate(clinicalCase) {
+  const key = diseaseTemplateKey(clinicalCase);
+  return PATHWAY_TEMPLATES[key] ?? DEFAULT_PATHWAY_TEMPLATE;
+}
+
+function getKnowledgeBase(clinicalCase) {
+  const key = diseaseTemplateKey(clinicalCase);
+  return KNOWLEDGE_LIBRARY[key] ?? KNOWLEDGE_LIBRARY.default;
+}
+
+function pagesForKinds(clinicalCase, kinds = []) {
+  const pages = (clinicalCase.pages ?? []).filter((page) => kinds.includes(page.kind));
+  return {
+    pages: pages.map((page) => page.page).sort((a, b) => a - b),
+    sources: [...new Set(pages.map((page) => page.source).filter(Boolean))],
+  };
+}
+
+function metricEvidencePages(clinicalCase, metric) {
+  const haystack = `${metric.key} ${metric.label} ${metric.context ?? ""}`.toLowerCase();
+  if (/bone|骨/.test(haystack)) return pagesForKinds(clinicalCase, ["bone_density", "imaging"]);
+  if (/qt|心电/.test(haystack)) return pagesForKinds(clinicalCase, ["ecg"]);
+  if (/phe|tyr|nh3|血氨|d3|羟丁酸/.test(haystack)) return pagesForKinds(clinicalCase, ["lab_report", "metabolic_report"]);
+  if (/hcy|c0|c3|c3c2|mma|尿|有机酸|酰基|肉碱/.test(haystack)) return pagesForKinds(clinicalCase, ["metabolic_report", "lab_report"]);
+  return pagesForKinds(clinicalCase, ["lab_report", "metabolic_report", "clinic_note"]);
+}
+
+function metricTraceId(metric) {
+  return `metric:${metric.key}:${metric.date}:${metric.value}`;
+}
+
+function recommendationTraceId(index) {
+  return `recommendation:${index}`;
+}
+
+function bestEvidenceIdForText(clinicalCase, text) {
+  const normalized = String(text ?? "").toLowerCase();
+  const metric = (clinicalCase.metrics ?? [])
+    .filter((item) => item.flag && item.flag !== "normal")
+    .find((item) => normalized.includes(String(item.key).toLowerCase()) || normalized.includes(String(item.label).toLowerCase()));
+  return metric ? metricTraceId(metric) : `summary:${clinicalCase.id}`;
+}
+
+function diseaseTemplateKey(clinicalCase) {
+  const text = [
+    clinicalCase.diseaseFamily,
+    clinicalCase.displayName,
+    ...(clinicalCase.diagnosis ?? []),
+    clinicalCase.genotype,
+    ...(clinicalCase.researchTags ?? []),
+  ].join(" ").toLowerCase();
+  if (/mma|甲基丙二酸|有机酸|钴胺素|hcy|同型半胱|mmachc/.test(text)) return "mma";
+  if (/pku|苯丙|phe|pah|高苯丙氨酸/.test(text)) return "pku";
+  return "default";
+}
+
+function averageConfidenceForKind(pages, kind) {
+  const matches = pages.filter((page) => page.kind === kind);
+  if (!matches.length) return null;
+  const total = matches.reduce((sum, page) => sum + Number(page.confidence ?? 1), 0);
+  return Number((total / matches.length).toFixed(2));
+}
+
+function inferDueLabel(text) {
+  if (/急|感染|呕吐|嗜睡|抽搐|意识|及时/.test(text)) return "立即/急性期";
+  if (/近期|复查|补充|复核/.test(text)) return "近期";
+  if (/3个月|三个月/.test(text)) return "3个月";
+  return "按医嘱";
+}
+
+function dedupeByTitle(items) {
+  const seen = new Set();
+  const result = [];
+  for (const item of items) {
+    const key = item.title;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    result.push(item);
+  }
+  return result;
+}
+
+function csvCell(value) {
+  const text = String(value ?? "");
+  if (!/[",\n]/.test(text)) return text;
+  return `"${text.replaceAll('"', '""')}"`;
 }
 
 export function buildFamilyCarePlan(clinicalCase) {
