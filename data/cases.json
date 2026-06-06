@@ -1,0 +1,330 @@
+[
+  {
+    "id": "pku-20250910",
+    "code": "PKU-001",
+    "displayName": "PKU 随访病例",
+    "diseaseFamily": "苯丙氨酸代谢异常",
+    "sex": "男",
+    "age": "19岁",
+    "visitDate": "2025-09-10",
+    "department": "儿内科门诊",
+    "diagnosis": [
+      "苯丙酮尿症",
+      "高苯丙氨酸血症",
+      "癫痫",
+      "脂肪酸缺乏",
+      "胆固醇缺乏"
+    ],
+    "genotype": "未在样本页中见明确基因型",
+    "chiefComplaint": "PKU复诊，长期低蛋白饮食与特殊配方管理。",
+    "summary": "成年 PKU 患者，近年情绪、生活自理和运动协调问题仍需随访。既往癫痫发作，2021年后未见明显大发作。Phe 相关记录持续偏高，门诊处置强调低苯丙氨酸饮食、脂类营养补充和复查。",
+    "metrics": [
+      { "key": "phe", "label": "Phe", "value": 7.32, "unit": "mg/dL", "date": "2024-11-01", "flag": "high", "reference": "目标范围需按PKU年龄和方案设定", "context": "既往记录" },
+      { "key": "phe", "label": "Phe", "value": 9.53, "unit": "mg/dL", "date": "2025-01-10", "flag": "high", "reference": "目标范围需按PKU年龄和方案设定", "context": "既往记录" },
+      { "key": "phe", "label": "Phe", "value": 10.22, "unit": "mg/dL", "date": "2025-03-21", "flag": "high", "reference": "目标范围需按PKU年龄和方案设定", "context": "既往记录" },
+      { "key": "phe", "label": "Phe", "value": 10.08, "unit": "mg/dL", "date": "2025-05-29", "flag": "high", "reference": "目标范围需按PKU年龄和方案设定", "context": "既往记录" },
+      { "key": "phe", "label": "Phe", "value": 10.02, "unit": "mg/dL", "date": "2025-07-23", "flag": "high", "reference": "目标范围需按PKU年龄和方案设定", "context": "既往记录" },
+      { "key": "nh3", "label": "血氨", "value": 29, "unit": "umol/L", "date": "2025-09-10", "flag": "normal", "reference": "<60", "context": "北大一院检验" },
+      { "key": "bohc", "label": "D3羟丁酸", "value": 0.36, "unit": "mmol/L", "date": "2025-09-10", "flag": "high", "reference": "0.03-0.3", "context": "北大一院检验" },
+      { "key": "bone", "label": "骨密度SOS", "value": 3778, "unit": "m/s", "date": "2025-09-10", "flag": "low", "reference": "同龄同性别人群百分位17", "context": "超声骨密度" }
+    ],
+    "events": [
+      { "date": "2021-05-17", "title": "既往抽搐大发作", "kind": "history", "body": "记录为亲属去世时出现较大癫痫发作，之后未再出现明显大发作。" },
+      { "date": "2024-11-01", "title": "Phe 7.32 mg/dL", "kind": "lab", "body": "Phe 记录高于目标管理区间，需结合饮食和配方依从性复核。" },
+      { "date": "2025-07-23", "title": "Phe 10.02 mg/dL", "kind": "lab", "body": "连续监测显示 Phe 仍偏高。" },
+      { "date": "2025-09-10", "title": "北大一院复诊", "kind": "visit", "body": "门诊记录包含现病史、饮食、用药、辅助检查、诊断与处置意见。" },
+      { "date": "2025-09-10", "title": "骨密度轻度不足", "kind": "exam", "body": "超声骨密度报告显示与同龄同性别人群比较骨强度轻度不足。" }
+    ],
+    "pages": [
+      { "page": 1, "source": "北大一院门诊病历", "kind": "clinic_note", "confidence": 0.98 },
+      { "page": 2, "source": "北大一院门诊病历", "kind": "clinic_note", "confidence": 0.98 },
+      { "page": 3, "source": "北大一院门诊病历", "kind": "clinic_note", "confidence": 0.98 },
+      { "page": 4, "source": "北大一院门诊病历", "kind": "clinic_note", "confidence": 0.98 },
+      { "page": 5, "source": "北大一院门诊病历", "kind": "prescription", "confidence": 0.94 },
+      { "page": 6, "source": "超声骨密度报告", "kind": "bone_density", "confidence": 0.96 },
+      { "page": 7, "source": "检查申请/处置单", "kind": "prescription", "confidence": 0.74 },
+      { "page": 8, "source": "心电图", "kind": "ecg", "confidence": 0.85 },
+      { "page": 9, "source": "视力筛查", "kind": "vision", "confidence": 0.86 },
+      { "page": 10, "source": "视力筛查", "kind": "vision", "confidence": 0.86 },
+      { "page": 11, "source": "北大一院检验报告", "kind": "lab_report", "confidence": 0.97 },
+      { "page": 12, "source": "北大一院检验报告", "kind": "lab_report", "confidence": 0.96 },
+      { "page": 13, "source": "北大一院检验报告", "kind": "lab_report", "confidence": 0.96 },
+      { "page": 14, "source": "北大一院检验报告", "kind": "lab_report", "confidence": 0.96 }
+    ],
+    "treatments": [
+      { "name": "低苯丙氨酸饮食", "dose": "持续", "route": "营养管理", "note": "控制肉量，维持特殊配方和低蛋白主食。" },
+      { "name": "多烯酸乙酯/DHA", "dose": "按门诊处方", "route": "口服", "note": "脂类营养补充。" },
+      { "name": "左卡尼汀", "dose": "每日", "route": "口服", "note": "样本中提到曾停用，复诊后需核对依从性。" },
+      { "name": "抗癫痫治疗", "dose": "维持", "route": "口服", "note": "既往癫痫史，需结合神经专科复核。" }
+    ],
+    "reviewRules": [
+      { "id": "pku-phe-high", "label": "Phe 连续偏高，需复核饮食和配方依从性", "severity": "high", "status": "open" },
+      { "id": "pku-bone-low", "label": "骨密度轻度不足，需复核维生素D、钙磷和运动方案", "severity": "medium", "status": "open" },
+      { "id": "pku-seizure-history", "label": "既往癫痫史，需维持神经系统随访", "severity": "medium", "status": "open" }
+    ],
+    "expertReplay": {
+      "keySymptoms": [
+        { "label": "Phe 连续偏高", "reason": "提示饮食和特殊配方依从性需要复盘，是 PKU 随访的核心线索。" },
+        { "label": "情绪与生活自理问题", "reason": "提示长期代谢控制、神经认知和家庭照护压力需要综合评估。" },
+        { "label": "既往癫痫史", "reason": "提示神经系统风险不能只看当前是否发作。" },
+        { "label": "骨密度轻度不足", "reason": "提示长期低蛋白饮食背景下需要关注骨健康和营养缺口。" }
+      ],
+      "requiredChecks": [
+        { "name": "Phe/Tyr 动态监测", "status": "review", "reason": "判断 Phe 控制目标、Tyr 补充和饮食调整依据。" },
+        { "name": "营养摄入记录", "status": "missing", "reason": "需要核对低蛋白主食、特殊配方、天然蛋白和脂类摄入。" },
+        { "name": "骨代谢评估", "status": "review", "reason": "骨密度不足时需结合维生素D、钙磷、ALP 和运动情况。" },
+        { "name": "神经系统随访", "status": "review", "reason": "既往癫痫和脑电异常背景下需确认脑电图、用药和发作记录。" }
+      ],
+      "metricResponseRules": [
+        { "metric": "Phe", "trigger": "连续高于个体目标范围", "response": "优先复核饮食记录、特殊配方用量和天然蛋白摄入，再由医生决定是否调整营养方案。" },
+        { "metric": "骨密度", "trigger": "低百分位或下降", "response": "补充骨代谢检查，评估维生素D、钙磷、运动和长期低蛋白饮食影响。" },
+        { "metric": "酮体/营养指标", "trigger": "提示能量或脂类摄入不足", "response": "结合体重、BMI、饮食记录和脂类补充依从性复核。" }
+      ],
+      "riskTriggers": [
+        { "risk": "癫痫", "trigger": "既往发作、脑电异常、睡眠/感染/代谢波动", "response": "维持神经系统随访，核对抗癫痫治疗和近期发作线索。" },
+        { "risk": "发育与行为问题", "trigger": "情绪不稳、生活自理差、学习或社交困难", "response": "建议神经心理、康复和家庭照护支持评估。" },
+        { "risk": "骨骼问题", "trigger": "骨密度低、长期限制饮食、维生素D/钙摄入不足", "response": "纳入骨健康长期随访。" }
+      ],
+      "dispositionDraft": [
+        "继续低苯丙氨酸饮食管理，复核真实饮食摄入和配方依从性。",
+        "补充或复核 Phe/Tyr、营养指标、骨代谢和神经系统随访资料。",
+        "处置建议必须由医生结合当前检查结果和患者依从性确认。"
+      ],
+      "followUpPlan": [
+        "近期复查 Phe/Tyr 和营养指标，带完整饮食记录复诊。",
+        "按医生确认复核骨代谢、骨密度和神经系统资料。",
+        "若出现抽搐、意识改变、明显行为退化或感染后状态变差，及时就医。"
+      ]
+    },
+    "familyCare": {
+      "plainExplanation": "这是一个需要长期管理的苯丙氨酸代谢问题。家属重点不是自行判断病情，而是按医生方案记录饮食、配方、复查和异常表现。",
+      "diet": {
+        "recommended": [
+          "按医生和营养师方案使用低蛋白主食和特殊配方。",
+          "记录每日天然蛋白、特殊配方、主食和零食摄入。",
+          "保证足够能量摄入，避免因吃得过少影响代谢稳定。"
+        ],
+        "avoid": [
+          "自行增加高蛋白食物或肉量。",
+          "擅自停用特殊配方或营养补充。",
+          "用网络饮食建议替代医生个体化方案。"
+        ],
+        "caution": [
+          "感染、发热、食欲下降时及时记录饮食和精神状态。",
+          "出现抽搐、意识改变或明显行为退化时及时就医。",
+          "体重下降、睡眠明显变化或情绪明显波动需反馈医生。"
+        ]
+      },
+      "medicationReminders": [
+        "按医生确认方案使用维生素、DHA、左卡尼汀等药物或营养补充。",
+        "不要自行停药、加量或更换品牌。",
+        "每次复诊带上实际服用记录和剩余药量。"
+      ],
+      "followUpReminders": [
+        "按计划复查 Phe/Tyr 和营养相关指标。",
+        "带完整饮食记录、配方使用记录和近期异常表现复诊。",
+        "按医生安排复查骨密度、骨代谢和神经系统资料。"
+      ],
+      "dangerSignals": [
+        "抽搐或疑似癫痫发作",
+        "意识改变、明显嗜睡或反应变差",
+        "感染后精神状态明显下降",
+        "持续呕吐、拒食或无法按方案进食",
+        "明显行为退化或生活能力突然下降"
+      ],
+      "uploadWorkflow": [
+        { "step": "家属上传新检验单或饮食记录", "owner": "family" },
+        { "step": "系统先整理指标、日期、异常和趋势", "owner": "system" },
+        { "step": "医生确认是否采纳和是否需要调整方案", "owner": "doctor" },
+        { "step": "确认后的通俗说明再反馈给家属", "owner": "doctor" }
+      ]
+    },
+    "aiDraft": {
+      "assessment": "当前资料支持 PKU 长期随访病例，主要问题为 Phe 控制不佳、营养与骨健康监测、既往癫痫和神经行为发育管理。",
+      "nextSteps": [
+        "复核近期 Phe、酪氨酸、营养摄入和特殊配方使用记录。",
+        "整理低蛋白饮食、特殊奶粉/蛋白粉、脂类和维生素补充的实际依从性。",
+        "按医生确认补充骨代谢、神经系统和营养评估。"
+      ],
+      "guardrail": "仅供医生审阅，不能替代临床诊断和处方。"
+    },
+    "researchTags": ["PKU", "成年随访", "饮食依从性", "骨健康", "癫痫史"]
+  },
+  {
+    "id": "mma-20260417",
+    "code": "MMA-001",
+    "displayName": "MMA 合并型随访病例",
+    "diseaseFamily": "有机酸血症/钴胺素代谢异常",
+    "sex": "男",
+    "age": "7岁7月",
+    "visitDate": "2026-04-17",
+    "department": "儿内科门诊",
+    "diagnosis": [
+      "甲基丙二酸尿症合并型",
+      "同型半胱氨酸血症",
+      "发育迟缓",
+      "高胡萝卜素血症",
+      "QT间期延长",
+      "近视/散光"
+    ],
+    "genotype": "MMACHC c.80A>G / c.658_660delAAG",
+    "chiefComplaint": "MMA合并型复诊，关注代谢指标、发育行为、心电图和营养治疗反应。",
+    "summary": "儿童 MMA 合并型病例，早期发育迟缓，既往癫痫发作后治疗控制。样本显示 Hcy、C3/C2、尿甲基丙二酸等指标需连续追踪；门诊处置包括羟钴胺、左卡尼汀、甜菜碱、维生素与饮食限制/鼓励。",
+    "metrics": [
+      { "key": "hcy", "label": "Hcy", "value": 24.9, "unit": "umol/L", "date": "2025-03-23", "flag": "high", "reference": "0-15", "context": "外院复查" },
+      { "key": "hcy", "label": "Hcy", "value": 42.9, "unit": "umol/L", "date": "2026-04-12", "flag": "high", "reference": "0-15", "context": "邢台人民医院" },
+      { "key": "c0", "label": "C0", "value": 37.22, "unit": "umol/L", "date": "2025-03-23", "flag": "high", "reference": "按机构参考范围", "context": "福佑龙惠" },
+      { "key": "c0", "label": "C0", "value": 69.48, "unit": "umol/L", "date": "2026-04-12", "flag": "high", "reference": "按机构参考范围", "context": "血代谢" },
+      { "key": "c3", "label": "C3", "value": 5.06, "unit": "umol/L", "date": "2025-03-23", "flag": "high", "reference": "按机构参考范围", "context": "福佑龙惠" },
+      { "key": "c3", "label": "C3", "value": 15.64, "unit": "umol/L", "date": "2026-04-12", "flag": "high", "reference": "1.00-5.00", "context": "血代谢" },
+      { "key": "c3c2", "label": "C3/C2", "value": 0.09, "unit": "", "date": "2025-03-23", "flag": "normal", "reference": "0.03-0.5", "context": "福佑龙惠" },
+      { "key": "c3c2", "label": "C3/C2", "value": 0.43, "unit": "", "date": "2026-04-12", "flag": "high", "reference": "0.03-0.5", "context": "血代谢" },
+      { "key": "mma-urine", "label": "尿甲基丙二酸", "value": 8.22, "unit": "mmol/mol肌酐", "date": "2026-01-27", "flag": "high", "reference": "0.20-3.60", "context": "尿有机酸谱" },
+      { "key": "bone-age", "label": "骨龄", "value": 9, "unit": "岁", "date": "2026-04-17", "flag": "advanced", "reference": "实际年龄约7岁", "context": "X线骨龄" }
+    ],
+    "events": [
+      { "date": "2018-08-22", "title": "出生", "kind": "history", "body": "出生资料用于纵向病程基线。" },
+      { "date": "2019-11-01", "title": "癫痫后未再明显发作", "kind": "history", "body": "病历记录2019年11月以后近6年半未见癫痫发作。" },
+      { "date": "2025-03-23", "title": "羟钴胺治疗后第3天复查", "kind": "treatment", "body": "记录 Hcy、血常规、肝肾功能等复查信息。" },
+      { "date": "2026-01-27", "title": "尿有机酸谱异常", "kind": "lab", "body": "尿甲基丙二酸、3羟基丙酸、3羟基戊二酸等升高。" },
+      { "date": "2026-04-12", "title": "Hcy 42.9 umol/L", "kind": "lab", "body": "Hcy 高于参考范围，需要结合治疗依从性和复查计划。" },
+      { "date": "2026-04-17", "title": "北大一院复诊", "kind": "visit", "body": "门诊记录整合基因型、发育、饮食、用药、检查和处置意见。" },
+      { "date": "2026-04-17", "title": "QT间期延长", "kind": "exam", "body": "心电图提示 QT 间期延长，需医生复核风险。" }
+    ],
+    "pages": [
+      { "page": 1, "source": "北大一院门诊病历", "kind": "clinic_note", "confidence": 0.98 },
+      { "page": 2, "source": "北大一院门诊病历", "kind": "clinic_note", "confidence": 0.98 },
+      { "page": 3, "source": "北大一院门诊病历", "kind": "clinic_note", "confidence": 0.98 },
+      { "page": 4, "source": "北大一院门诊病历", "kind": "prescription", "confidence": 0.93 },
+      { "page": 5, "source": "尿液分析", "kind": "lab_report", "confidence": 0.8 },
+      { "page": 6, "source": "血氨基酸酰基肉碱谱", "kind": "metabolic_report", "confidence": 0.96 },
+      { "page": 7, "source": "血氨基酸酰基肉碱谱", "kind": "metabolic_report", "confidence": 0.96 },
+      { "page": 8, "source": "有机酸趋势图", "kind": "metabolic_report", "confidence": 0.94 },
+      { "page": 9, "source": "尿有机酸谱", "kind": "metabolic_report", "confidence": 0.96 },
+      { "page": 10, "source": "有机酸色谱图", "kind": "metabolic_report", "confidence": 0.9 },
+      { "page": 11, "source": "尿有机酸谱", "kind": "metabolic_report", "confidence": 0.96 },
+      { "page": 12, "source": "尿有机酸谱", "kind": "metabolic_report", "confidence": 0.96 },
+      { "page": 13, "source": "尿有机酸谱", "kind": "metabolic_report", "confidence": 0.96 },
+      { "page": 14, "source": "尿有机酸谱", "kind": "metabolic_report", "confidence": 0.96 },
+      { "page": 19, "source": "邢台人民医院检验", "kind": "lab_report", "confidence": 0.94 },
+      { "page": 20, "source": "邢台人民医院检验", "kind": "lab_report", "confidence": 0.94 },
+      { "page": 21, "source": "邢台人民医院检验", "kind": "lab_report", "confidence": 0.94 },
+      { "page": 32, "source": "影像报告", "kind": "imaging", "confidence": 0.88 },
+      { "page": 33, "source": "视力报告", "kind": "vision", "confidence": 0.85 },
+      { "page": 34, "source": "检查申请/处置单", "kind": "prescription", "confidence": 0.78 },
+      { "page": 35, "source": "心电图", "kind": "ecg", "confidence": 0.86 },
+      { "page": 36, "source": "骨密度报告", "kind": "bone_density", "confidence": 0.92 }
+    ],
+    "treatments": [
+      { "name": "羟钴胺", "dose": "10mg，每周3次", "route": "肌肉注射", "note": "样本中记录外购/美浓相关方案。" },
+      { "name": "左卡尼汀", "dose": "每日0.5支", "route": "口服", "note": "长期代谢支持。" },
+      { "name": "甜菜碱", "dose": "每日3g，分两次", "route": "口服", "note": "Hcy 管理相关。" },
+      { "name": "多烯酸乙酯/DHA", "dose": "每日", "route": "口服", "note": "脂类营养补充。" },
+      { "name": "饮食管理", "dose": "鼓励肥瘦肉、大米、鱼虾和低色素低糖食物，限制植物色素、糖和普通奶", "route": "营养管理", "note": "需由医生和营养师确认个体化方案。" }
+    ],
+    "reviewRules": [
+      { "id": "mma-hcy-high", "label": "Hcy 42.9，高于参考范围", "severity": "high", "status": "open" },
+      { "id": "mma-c3-high", "label": "C3/C0/C3-C2 相关指标需连续追踪", "severity": "high", "status": "open" },
+      { "id": "mma-qt", "label": "QT间期延长，需复核心电图风险", "severity": "high", "status": "open" },
+      { "id": "mma-bone-age", "label": "骨龄约9岁，需结合内分泌/营养评估", "severity": "medium", "status": "open" },
+      { "id": "mma-development", "label": "发育行为和社交融入需长期随访", "severity": "medium", "status": "open" }
+    ],
+    "expertReplay": {
+      "keySymptoms": [
+        { "label": "4个月不能竖头与发育迟缓", "reason": "提示神经发育受累，是 MMA 合并型长期管理的核心线索。" },
+        { "label": "既往癫痫发作", "reason": "提示代谢失衡或神经系统脆弱性，需要长期风险追踪。" },
+        { "label": "行为异常与社交融入困难", "reason": "提示不能只看代谢指标，还要评估发育行为结局。" },
+        { "label": "QT间期延长", "reason": "提示心电风险，需要与代谢状态和用药一起复核。" },
+        { "label": "骨龄提前", "reason": "提示营养、内分泌和长期治疗影响需要综合判断。" }
+      ],
+      "requiredChecks": [
+        { "name": "Hcy", "status": "done", "reason": "合并型 MMA 治疗反应和风险分层的关键指标。" },
+        { "name": "血氨", "status": "review", "reason": "感染、呕吐、嗜睡或急性状态变化时需排除代谢危象。" },
+        { "name": "血氨基酸/酰基肉碱谱", "status": "done", "reason": "追踪 C3、C0、C3/C2 等代谢控制情况。" },
+        { "name": "尿有机酸", "status": "review", "reason": "复核尿甲基丙二酸负荷和趋势。" },
+        { "name": "心电图", "status": "review", "reason": "QT间期延长时需定期复核。" },
+        { "name": "发育行为评估", "status": "missing", "reason": "行为、语言、社交和学习能力需要量化随访。" }
+      ],
+      "metricResponseRules": [
+        { "metric": "Hcy", "trigger": "升高或较前反弹", "response": "优先复核羟钴胺、甜菜碱、维生素和叶酸相关治疗依从性，再评估是否需调整方案。" },
+        { "metric": "C3/C3-C2", "trigger": "升高或持续异常", "response": "结合左卡尼汀、饮食摄入、感染/应激和尿有机酸复查。" },
+        { "metric": "尿甲基丙二酸", "trigger": "高于参考范围或趋势上升", "response": "复核代谢控制、饮食和药物依从性，并安排阶段性复查。" },
+        { "metric": "QT间期", "trigger": "延长", "response": "提醒心电复核，必要时与心内科协作，避免忽略潜在心律风险。" }
+      ],
+      "riskTriggers": [
+        { "risk": "代谢危象", "trigger": "感染、呕吐、嗜睡、拒食、意识改变、血氨升高", "response": "提示急诊评估血氨、酸碱、电解质、血糖和代谢指标。" },
+        { "risk": "癫痫", "trigger": "既往发作、发热/感染、睡眠减少、代谢控制变差", "response": "维持神经系统随访，复核抗癫痫药和脑电图资料。" },
+        { "risk": "发育问题", "trigger": "语言、行为、社交、学习或运动能力落后", "response": "建立发育行为量表和康复干预随访。" },
+        { "risk": "骨骼/内分泌问题", "trigger": "骨龄提前、骨密度异常、体重快速变化", "response": "结合营养、内分泌和骨健康资料综合评估。" }
+      ],
+      "dispositionDraft": [
+        "复核羟钴胺、甜菜碱、左卡尼汀、维生素等治疗依从性和实际剂量。",
+        "围绕 Hcy、C3/C3-C2、尿甲基丙二酸、血氨建立连续趋势判断。",
+        "QT间期延长、发育行为问题和骨龄提前需纳入多学科随访。",
+        "所有处置建议需医生结合当前检查结果和病情变化确认。"
+      ],
+      "followUpPlan": [
+        "按医生确认复查 Hcy、血氨、肝肾功能、血氨基酸/酰基肉碱谱和尿有机酸。",
+        "复核心电图，追踪 QT 间期变化。",
+        "补充发育行为评估，记录语言、社交、学习和运动能力变化。",
+        "若出现呕吐、嗜睡、抽搐、拒食或感染后状态下降，按代谢危象风险处理。"
+      ]
+    },
+    "familyCare": {
+      "plainExplanation": "这是一个需要长期随访的遗传代谢病。家属重点是按医嘱用药、记录饮食和复查结果，并在感染、呕吐、嗜睡、抽搐等情况时及时联系医生。",
+      "diet": {
+        "recommended": [
+          "按医生和营养师确认方案安排蛋白、主食和能量摄入。",
+          "记录每日饮食、肉类/奶类摄入、特殊营养品和食欲变化。",
+          "感染或食欲下降时更要记录进食、精神状态和体温。"
+        ],
+        "avoid": [
+          "自行停用羟钴胺、甜菜碱、左卡尼汀或维生素。",
+          "自行改变高蛋白、低蛋白或限制食物方案。",
+          "用一次检验结果自行判断是否加药或停药。"
+        ],
+        "caution": [
+          "发热、感染、呕吐或拒食时可能诱发代谢失衡。",
+          "明显嗜睡、反应差、抽搐或意识改变需要尽快就医。",
+          "心电图异常、发育行为变化和骨龄问题需按医嘱长期随访。"
+        ]
+      },
+      "medicationReminders": [
+        "羟钴胺按医生确认频次注射。",
+        "甜菜碱按医生确认剂量分次服用。",
+        "左卡尼汀、维生素和 DHA 等按处方执行。",
+        "记录漏服、呕吐后是否补服等情况，复诊时交给医生判断。"
+      ],
+      "followUpReminders": [
+        "按计划复查 Hcy、血氨、肝肾功能、酰基肉碱谱和尿有机酸。",
+        "按医生安排复查心电图，关注 QT 间期。",
+        "定期记录身高、体重、语言、运动、学习和社交表现。",
+        "带新检验单、用药记录和饮食记录复诊。"
+      ],
+      "dangerSignals": [
+        "持续呕吐或明显拒食",
+        "嗜睡、反应变差或意识改变",
+        "抽搐或疑似癫痫发作",
+        "感染、发热后精神状态明显下降",
+        "呼吸异常、明显乏力或站立行走变差",
+        "胸闷、心悸、晕厥或明显心电风险表现"
+      ],
+      "uploadWorkflow": [
+        { "step": "家属上传新检验单、心电图或饮食/用药记录", "owner": "family" },
+        { "step": "系统提取检查日期、指标、异常值和趋势", "owner": "system" },
+        { "step": "系统生成待确认摘要，不直接给出治疗调整", "owner": "system" },
+        { "step": "医生确认后形成家属可读反馈", "owner": "doctor" }
+      ]
+    },
+    "aiDraft": {
+      "assessment": "当前资料支持 MMA 合并型长期随访病例，重点问题为 Hcy 和有机酸/酰基肉碱指标控制、羟钴胺与甜菜碱等治疗反应、QT间期延长、发育行为和营养管理。",
+      "nextSteps": [
+        "复核羟钴胺、甜菜碱、左卡尼汀和维生素用药依从性。",
+        "按医生确认追踪 Hcy、血氨、肝肾功能、血氨基酸酰基肉碱谱和尿有机酸。",
+        "对 QT 间期延长、骨龄提前、视力问题和发育行为问题建立专科随访清单。"
+      ],
+      "guardrail": "仅供医生审阅，不能替代临床诊断和处方。"
+    },
+    "researchTags": ["MMA合并型", "MMACHC", "Hcy", "有机酸血症", "羟钴胺", "QT间期"]
+  }
+]

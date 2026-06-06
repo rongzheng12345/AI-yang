@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>罕见遗传代谢病临床智能平台</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="病例队列">
+        <div class="brand">
+          <div class="brand-mark">RD</div>
+          <div>
+            <h1>罕见遗传代谢病临床智能平台</h1>
+            <p>PKU / MMA 专病队列</p>
+          </div>
+        </div>
+
+        <label class="search">
+          <span>病例检索</span>
+          <input id="caseSearch" type="search" placeholder="疾病、基因、标签" />
+        </label>
+
+        <div id="caseList" class="case-list"></div>
+
+        <section class="intake-panel" aria-label="导入队列">
+          <div class="section-heading">
+            <h2>导入队列</h2>
+            <span id="queueCount">0</span>
+          </div>
+          <label class="upload-button" title="加入本地导入队列">
+            <input id="pdfUpload" type="file" accept="application/pdf" multiple />
+            <span>+ 病例包</span>
+          </label>
+          <div id="uploadQueue" class="upload-queue"></div>
+        </section>
+      </aside>
+
+      <main class="workspace">
+        <header class="workspace-header">
+          <div>
+            <p id="caseCode" class="eyebrow"></p>
+            <h2 id="caseTitle"></h2>
+          </div>
+          <div id="headerBadges" class="header-badges"></div>
+        </header>
+
+        <section id="stats" class="stats" aria-label="病例指标概览"></section>
+
+        <nav id="entryNav" class="entry-nav" aria-label="功能入口">
+          <button class="entry-button is-active" type="button" data-entry="assistant">
+            <strong>病例助手</strong>
+            <span>摘要、异常、缺失检查、建议、问答</span>
+          </button>
+          <button class="entry-button" type="button" data-entry="similar">
+            <strong>相似病例</strong>
+            <span>相似度、相似原因、既往处理方式</span>
+          </button>
+          <button class="entry-button" type="button" data-entry="cohort">
+            <strong>科研队列</strong>
+            <span>筛选、统计、疗效分析、误诊路径</span>
+          </button>
+        </nav>
+
+        <section id="assistantView" class="entry-view is-active">
+          <div class="content-grid">
+            <section class="main-column">
+              <section class="clinical-section profile-section">
+                <div class="section-heading">
+                  <h3>病例摘要</h3>
+                  <span id="visitDate"></span>
+                </div>
+                <div id="caseProfile" class="profile-grid"></div>
+              </section>
+
+              <section class="clinical-section">
+                <div class="section-heading">
+                  <h3>下一步建议草稿</h3>
+                  <span>医生确认</span>
+                </div>
+                <div id="aiDraft" class="ai-draft"></div>
+              </section>
+
+              <section class="clinical-section expert-section">
+                <div class="section-heading">
+                  <h3>杨教授专家决策复盘</h3>
+                  <span id="expertReplayStatus">结构化草稿</span>
+                </div>
+                <div id="expertReplay" class="expert-replay"></div>
+              </section>
+
+              <section class="clinical-section family-section">
+                <div class="section-heading">
+                  <h3>诊后家属管理助手</h3>
+                  <span id="familyCareStatus">医生确认后发送</span>
+                </div>
+                <div id="familyCare" class="family-care"></div>
+                <div class="family-upload">
+                  <label class="upload-button family-upload-button" title="家属上传后先整理，再交给医生确认">
+                    <input id="familyUpload" type="file" accept="application/pdf,image/*" multiple />
+                    <span>+ 家属检验单</span>
+                  </label>
+                  <div id="familyUploadList" class="family-upload-list"></div>
+                </div>
+              </section>
+
+              <section class="clinical-section chat-section">
+                <div class="section-heading">
+                  <h3>AI 问答</h3>
+                  <span id="chatMode">本地上下文</span>
+                </div>
+                <div id="chatSuggestions" class="chat-suggestions"></div>
+                <div id="chatMessages" class="chat-messages" aria-live="polite"></div>
+                <form id="chatForm" class="chat-form">
+                  <input id="chatInput" type="text" placeholder="Hcy 最新是多少？" autocomplete="off" />
+                  <button id="chatSubmit" type="submit">发送</button>
+                </form>
+              </section>
+
+              <section class="clinical-section">
+                <div class="section-heading metric-heading">
+                  <h3>指标趋势</h3>
+                  <div id="metricTabs" class="segmented" role="tablist"></div>
+                </div>
+                <div id="metricChart" class="metric-chart"></div>
+              </section>
+
+              <section class="clinical-section">
+                <div class="section-heading">
+                  <h3>病程时间轴</h3>
+                  <span id="eventCount"></span>
+                </div>
+                <ol id="timeline" class="timeline"></ol>
+              </section>
+            </section>
+
+            <aside class="right-column">
+              <section class="clinical-section">
+                <div class="section-heading">
+                  <h3>异常指标</h3>
+                  <span>结构化抽取</span>
+                </div>
+                <div id="abnormalMetrics" class="signal-list"></div>
+              </section>
+
+              <section class="clinical-section">
+                <div class="section-heading">
+                  <h3>缺失/待复核检查</h3>
+                  <span>专家复盘</span>
+                </div>
+                <div id="missingChecks" class="signal-list"></div>
+              </section>
+
+              <section class="clinical-section">
+                <div class="section-heading">
+                  <h3>下一步建议</h3>
+                  <span>草稿</span>
+                </div>
+                <div id="nextStepDraft" class="next-step-list"></div>
+              </section>
+
+              <section class="clinical-section">
+                <div class="section-heading">
+                  <h3>医生审核</h3>
+                  <span id="openSignalCount"></span>
+                </div>
+                <div id="reviewRules" class="review-list"></div>
+              </section>
+
+              <section class="clinical-section">
+                <div class="section-heading">
+                  <h3>证据页面</h3>
+                  <span id="pageCount"></span>
+                </div>
+                <div id="pageGroups" class="page-groups"></div>
+              </section>
+            </aside>
+          </div>
+        </section>
+
+        <section id="similarView" class="entry-view">
+          <section class="clinical-section similar-section">
+            <div class="section-heading">
+              <h3>相似病例</h3>
+              <span id="similarStatus"></span>
+            </div>
+            <div id="similarCases" class="similar-list"></div>
+          </section>
+        </section>
+
+        <section id="cohortView" class="entry-view">
+          <div class="content-grid cohort-workspace">
+            <section class="main-column">
+              <section class="clinical-section cohort-section">
+                <div class="section-heading">
+                  <h3>科研队列筛选</h3>
+                  <span id="cohortStatus"></span>
+                </div>
+                <div id="cohortFilters" class="cohort-filters"></div>
+                <div id="cohortSummary" class="cohort-summary"></div>
+                <div id="cohortResults" class="cohort-results"></div>
+              </section>
+
+              <section class="clinical-section analysis-section">
+                <div class="section-heading">
+                  <h3>疗效分析</h3>
+                  <span>真实世界数据</span>
+                </div>
+                <div id="cohortEffectiveness" class="analysis-list"></div>
+              </section>
+
+              <section class="clinical-section analysis-section">
+                <div class="section-heading">
+                  <h3>误诊路径</h3>
+                  <span>复盘视图</span>
+                </div>
+                <div id="cohortMisdiagnosis" class="analysis-list"></div>
+              </section>
+            </section>
+
+            <aside class="right-column">
+              <section class="clinical-section">
+                <div class="section-heading">
+                  <h3>治疗方案维度</h3>
+                  <span id="treatmentCount"></span>
+                </div>
+                <div id="treatments" class="treatment-list"></div>
+              </section>
+
+              <section class="clinical-section">
+                <div class="section-heading">
+                  <h3>RWD分析方向</h3>
+                  <span>可配置</span>
+                </div>
+                <div id="cohortInsights" class="cohort-insights"></div>
+              </section>
+
+              <section class="clinical-section">
+                <div class="section-heading">
+                  <h3>科研标签</h3>
+                  <span>当前病例</span>
+                </div>
+                <div id="researchTags" class="tag-list"></div>
+              </section>
+            </aside>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>
